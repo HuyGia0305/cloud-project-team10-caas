@@ -1,0 +1,29 @@
+﻿apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dev-user-a
+  namespace: team-dev-a
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dev-role
+  namespace: team-dev-a
+rules:
+- apiGroups: ["", "apps"]
+  resources: ["pods", "services", "deployments", "configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-rolebinding
+  namespace: team-dev-a
+subjects:
+- kind: ServiceAccount
+  name: dev-user-a
+  namespace: team-dev-a
+roleRef:
+  kind: Role
+  name: dev-role
+  apiGroup: rbac.authorization.k8s.io
