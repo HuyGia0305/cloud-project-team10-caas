@@ -1,4 +1,4 @@
-﻿# Đồ Án Điện Toán Đám Mây - UTH (2026 - 2027)
+﻿# Đồ Án Điện Toán Đám Mây - UTH 
 ## Đề Tài 10: Xây dựng nền tảng CaaS nhỏ cho nhiều nhóm phát triển với quota và cô lập tài nguyên
 
 * **Giảng viên hướng dẫn:** TS. Lê Quốc Tuấn
