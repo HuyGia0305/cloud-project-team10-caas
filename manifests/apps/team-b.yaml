@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: team-b-api
+  namespace: team-dev-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-b-api
+  template:
+    metadata:
+      labels:
+        app: team-b-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      containers:
+        - name: api
+          image: caas-team-b-api:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_HOST
+              value: shared-postgres.team-shared.svc.cluster.local
+            - name: REDIS_HOST
+              value: shared-redis.team-shared.svc.cluster.local
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-auth
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 300m, memory: 256Mi}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: team-b-api
+  namespace: team-dev-b
+spec:
+  selector:
+    app: team-b-api
+  ports:
+    - port: 8080
+      targetPort: 8080
