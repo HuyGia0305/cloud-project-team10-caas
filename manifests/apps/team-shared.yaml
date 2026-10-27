@@ -27,9 +27,10 @@ spec:
       labels:
         app: shared-postgres
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: postgres
-          image: postgres:16.15-alpine
+          image: docker.io/library/postgres:16.15-alpine
           ports:
             - containerPort: 5432
           env:
@@ -42,6 +43,16 @@ spec:
                 secretKeyRef:
                   name: shared-postgres-auth
                   key: POSTGRES_PASSWORD
+            - name: TEAM_A_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-auth
+                  key: TEAM_A_PASSWORD
+            - name: TEAM_B_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-auth
+                  key: TEAM_B_PASSWORD
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           resources:
@@ -55,10 +66,18 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d/10-create-team-databases.sh
+              subPath: 10-create-team-databases.sh
+              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: shared-postgres-data
+        - name: init-scripts
+          configMap:
+            name: postgres-init
+            defaultMode: 0555
 ---
 apiVersion: v1
 kind: Service
@@ -87,17 +106,45 @@ spec:
       labels:
         app: shared-redis
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: redis
-          image: redis:7.4.11-alpine
+          image: docker.io/library/redis:7.4.11-alpine
+          command:
+            - sh
+            - -c
+            - |
+              umask 077
+              printf 'user default off\nuser team_a on >%s ~team-a-* -@all +ping +incr +incrby +get\nuser team_b on >%s ~team-b-* -@all +ping +incr +incrby +get\n' "$TEAM_A_REDIS_PASSWORD" "$TEAM_B_REDIS_PASSWORD" > /tmp/redis-users.acl
+              exec redis-server --port 6379 --aclfile /tmp/redis-users.acl --save '' --appendonly no
           ports:
             - containerPort: 6379
+          env:
+            - name: TEAM_A_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-auth
+                  key: TEAM_A_REDIS_PASSWORD
+            - name: TEAM_B_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shared-postgres-auth
+                  key: TEAM_B_REDIS_PASSWORD
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests: {cpu: 50m, memory: 64Mi}
             limits: {cpu: 250m, memory: 256Mi}
           readinessProbe:
             exec:
-              command: ["redis-cli", "ping"]
+              command:
+                - sh
+                - -c
+                - REDISCLI_AUTH="$TEAM_A_REDIS_PASSWORD" redis-cli --user team_a ping
             initialDelaySeconds: 3
             periodSeconds: 5
 ---

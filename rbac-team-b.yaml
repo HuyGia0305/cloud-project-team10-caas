@@ -3,16 +3,23 @@ kind: ServiceAccount
 metadata:
   name: dev-user-b
   namespace: team-dev-b
+automountServiceAccountToken: false
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: dev-role
+  name: dev-role-b
   namespace: team-dev-b
 rules:
-- apiGroups: ["", "apps"]
-  resources: ["pods", "services", "deployments", "configmaps"]
-  verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -20,10 +27,10 @@ metadata:
   name: dev-rolebinding
   namespace: team-dev-b
 subjects:
-- kind: ServiceAccount
-  name: dev-user-b
-  namespace: team-dev-b
+  - kind: ServiceAccount
+    name: dev-user-b
+    namespace: team-dev-b
 roleRef:
   kind: Role
-  name: dev-role
+  name: dev-role-b
   apiGroup: rbac.authorization.k8s.io

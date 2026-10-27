@@ -15,6 +15,7 @@ spec:
           namespaces:
           - team-dev-a
           - team-dev-b
+          - team-dev-c
     validate:
       message: "Chinh sach bao mat CaaS: Khong duoc dung tag :latest, bat buoc chi dinh phien ban cu the (vi du: nginx:1.25)!"
       pattern:

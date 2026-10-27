@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cpu-pressure
+  namespace: team-dev-a
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: cpu-pressure
+  template:
+    metadata:
+      labels:
+        app: cpu-pressure
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: team-a-api
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: cpu-worker
+          image: ghcr.io/team10/caas-team-a-api:v1
+          imagePullPolicy: Never
+          command: ["python", "-c", "while True: pass"]
+          resources:
+            requests:
+              cpu: 200m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

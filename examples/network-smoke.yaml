@@ -1,41 +1,74 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: web-a
+  name: network-client-a
   namespace: team-dev-a
 spec:
+  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
-  containers:
-    - name: web
-      image: python:3.12-alpine
-      command: ["python", "-m", "http.server", "8080", "--bind", "0.0.0.0"]
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: client-a
-  namespace: team-dev-a
-spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: client
-      image: python:3.12-alpine
-      command: ["sleep", "3600"]
+      image: docker.io/library/busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests: {cpu: 50m, memory: 64Mi}
+        limits: {cpu: 100m, memory: 128Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: client-b
+  name: network-client-b
   namespace: team-dev-b
 spec:
+  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: client
-      image: python:3.12-alpine
-      command: ["sleep", "3600"]
+      image: docker.io/library/busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests: {cpu: 50m, memory: 64Mi}
+        limits: {cpu: 100m, memory: 128Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: network-client-c
+  namespace: team-dev-c
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: client
+      image: docker.io/library/busybox:1.36.1
+      command: ["sh", "-c", "sleep 3600"]
+      resources:
+        requests: {cpu: 50m, memory: 64Mi}
+        limits: {cpu: 100m, memory: 128Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]

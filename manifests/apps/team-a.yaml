@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: team-a-api
   namespace: team-dev-a
+  labels:
+    app: team-a-api
 spec:
   replicas: 1
   selector:
@@ -17,25 +19,45 @@ spec:
         runAsNonRoot: true
         runAsUser: 10001
         runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      automountServiceAccountToken: false
       containers:
         - name: api
-          image: caas-team-a-api:v1
+          image: ghcr.io/team10/caas-team-a-api:v1
           imagePullPolicy: Never
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
           env:
             - name: POSTGRES_HOST
               value: shared-postgres.team-shared.svc.cluster.local
+            - name: POSTGRES_DB
+              value: caas_team_a
+            - name: POSTGRES_USER
+              value: team_a
             - name: REDIS_HOST
               value: shared-redis.team-shared.svc.cluster.local
+            - name: REDIS_USER
+              value: team_a
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: team-a-db-auth
+                  key: REDIS_PASSWORD
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: shared-postgres-auth
+                  name: team-a-db-auth
                   key: POSTGRES_PASSWORD
           resources:
             requests: {cpu: 100m, memory: 128Mi}
             limits: {cpu: 300m, memory: 256Mi}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           readinessProbe:
             httpGet:
               path: /health
@@ -48,9 +70,15 @@ kind: Service
 metadata:
   name: team-a-api
   namespace: team-dev-a
+  labels:
+    app: team-a-api
 spec:
   selector:
     app: team-a-api
   ports:
-    - port: 8080
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 8081
       targetPort: 8080

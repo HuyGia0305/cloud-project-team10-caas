@@ -7,9 +7,11 @@
   2. Huỳnh Tấn Phát (Quản lý tài nguyên ResourceQuota, LimitRange, NetworkPolicy)
   3. Đinh Văn Thái (Giám sát Prometheus/Grafana, Kiểm thử chịu tải, Báo cáo kỹ thuật)
 
-### Kiến trúc nền tảng:
-- Cụm Kubernetes Multi-Node chạy trên k3d (1 Server, 2 Agents).
-- Phân vùng đa người dùng (Multi-tenancy) với 3 Namespace: \	eam-dev-a\, \	eam-dev-b\, \	eam-shared\.
-- Phân quyền truy cập theo vai trò (RBAC).
-- Kiểm soát tuân thủ và chính sách an toàn (Kyverno Admission Controller).
-- Giám sát trạng thái Kubernetes bằng Prometheus và Grafana triển khai qua Helm; xem hướng dẫn tại [DEVELOPER_ONBOARDING.md](DEVELOPER_ONBOARDING.md).
+### Kiến trúc nền tảng
+- Cụm Kubernetes đa node chạy trên k3d (1 server, 2 agents).
+- Ba namespace nhóm (`team-dev-a`, `team-dev-b`, `team-dev-c`) và namespace dùng chung `team-shared`.
+- Cô lập tài nguyên bằng ResourceQuota/LimitRange; quyền triển khai riêng bằng ServiceAccount/RBAC.
+- Cô lập luồng mạng bằng default-deny NetworkPolicy; admission policy bằng Kyverno và Pod Security Admission.
+- Prometheus/Grafana qua Helm, dashboard CPU/RAM/quota theo nhóm; API A/B phát metrics.
+
+Xem [hướng dẫn triển khai](DEVELOPER_ONBOARDING.md), [báo cáo và kết quả kiểm thử](REPORT.md), và [script kiểm chứng](scripts/validate-platform.ps1).

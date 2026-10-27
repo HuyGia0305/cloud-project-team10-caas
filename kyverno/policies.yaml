@@ -1,0 +1,88 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tenant-image-policy
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-approved-registry-and-version
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - team-dev-a
+                - team-dev-b
+                - team-dev-c
+              operations:
+                - CREATE
+                - UPDATE
+      validate:
+        cel:
+          expressions:
+            - expression: >-
+                object.spec.containers.all(c,
+                  (c.image.startsWith('docker.io/library/') ||
+                   c.image.startsWith('docker.io/nginxinc/') ||
+                   c.image.startsWith('docker.io/mccutchen/') ||
+                   c.image.startsWith('ghcr.io/team10/') ||
+                   c.image.startsWith('registry.k8s.io/')) &&
+                  (c.image.contains('@sha256:') ||
+                   c.image.matches('^.*:[^/:@]+$')) &&
+                  !c.image.matches('^.*:latest$'))
+              message: "Use a versioned image from docker.io, ghcr.io, or registry.k8s.io; latest and unqualified images are forbidden."
+            - expression: >-
+                !has(object.spec.initContainers) ||
+                object.spec.initContainers.all(c,
+                  (c.image.startsWith('docker.io/library/') ||
+                   c.image.startsWith('docker.io/nginxinc/') ||
+                   c.image.startsWith('docker.io/mccutchen/') ||
+                   c.image.startsWith('ghcr.io/team10/') ||
+                   c.image.startsWith('registry.k8s.io/')) &&
+                  (c.image.contains('@sha256:') ||
+                   c.image.matches('^.*:[^/:@]+$')) &&
+                  !c.image.matches('^.*:latest$'))
+              message: "Init containers must use a versioned image from an approved registry."
+    - name: require-container-hardening-and-resources
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - team-dev-a
+                - team-dev-b
+                - team-dev-c
+              operations:
+                - CREATE
+                - UPDATE
+      validate:
+        cel:
+          expressions:
+            - expression: >-
+                object.spec.containers.all(c,
+                  has(c.securityContext) &&
+                  c.securityContext.runAsNonRoot == true &&
+                  c.securityContext.allowPrivilegeEscalation == false &&
+                  has(c.securityContext.capabilities) &&
+                  c.securityContext.capabilities.drop.exists(cap, cap == 'ALL') &&
+                  has(c.resources.requests.cpu) &&
+                  has(c.resources.requests.memory) &&
+                  has(c.resources.limits.cpu) &&
+                  has(c.resources.limits.memory))
+              message: "Every container must run non-root, drop all capabilities, disable privilege escalation, and declare CPU/memory requests and limits."
+            - expression: >-
+                !has(object.spec.initContainers) ||
+                object.spec.initContainers.all(c,
+                  has(c.securityContext) &&
+                  c.securityContext.runAsNonRoot == true &&
+                  c.securityContext.allowPrivilegeEscalation == false &&
+                  has(c.securityContext.capabilities) &&
+                  c.securityContext.capabilities.drop.exists(cap, cap == 'ALL') &&
+                  has(c.resources.requests.cpu) &&
+                  has(c.resources.requests.memory) &&
+                  has(c.resources.limits.cpu) &&
+                  has(c.resources.limits.memory))
+              message: "Init containers must meet the same security and resource requirements."

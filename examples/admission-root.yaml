@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: forbidden-root
+  namespace: team-dev-a
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: test
+      image: docker.io/library/busybox:1.36.1
+      command: ["sleep", "3600"]
+      resources:
+        requests: {cpu: 50m, memory: 64Mi}
+        limits: {cpu: 100m, memory: 128Mi}
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]

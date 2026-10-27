@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: team-shared
+data:
+  10-create-team-databases.sh: |
+    #!/bin/sh
+    set -eu
+
+    psql --set=ON_ERROR_STOP=1 --set=team_a_password="$TEAM_A_PASSWORD" --set=team_b_password="$TEAM_B_PASSWORD" --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<SQL
+    CREATE ROLE team_a LOGIN PASSWORD :'team_a_password';
+    CREATE ROLE team_b LOGIN PASSWORD :'team_b_password';
+    SQL
+
+    createdb --username "$POSTGRES_USER" --owner team_a caas_team_a
+    createdb --username "$POSTGRES_USER" --owner team_b caas_team_b
+
+    psql --set=ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<SQL
+    REVOKE CONNECT ON DATABASE caas FROM PUBLIC;
+    REVOKE CONNECT ON DATABASE caas_team_a FROM PUBLIC;
+    REVOKE CONNECT ON DATABASE caas_team_b FROM PUBLIC;
+    SQL

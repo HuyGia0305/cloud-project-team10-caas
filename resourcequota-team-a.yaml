@@ -10,3 +10,7 @@ spec:
     limits.cpu: "2"
     limits.memory: 2Gi
     pods: "6"
+    count/deployments.apps: "6"
+    count/services: "8"
+    count/configmaps: "10"
+    count/persistentvolumeclaims: "2"

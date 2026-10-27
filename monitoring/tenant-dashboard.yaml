@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tenant-resource-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  tenant-resources.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "cores"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\",namespace=~\"team-dev-a|team-dev-b|team-dev-c\"}[5m]))", "legendFormat": "{{namespace}}", "refId": "A"}],
+          "title": "CPU usage theo namespace",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "sum by (namespace) (container_memory_working_set_bytes{container!=\"\",image!=\"\",namespace=~\"team-dev-a|team-dev-b|team-dev-c\"})", "legendFormat": "{{namespace}}", "refId": "A"}],
+          "title": "Memory working set theo namespace",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "sum by (namespace) (kube_pod_info{namespace=~\"team-dev-a|team-dev-b|team-dev-c\"})", "legendFormat": "{{namespace}}", "refId": "A"}],
+          "title": "Số Pod đang chạy theo namespace",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "sum by (team) (rate(caas_http_requests_total[5m]))", "legendFormat": "team {{team}}", "refId": "A"}],
+          "title": "API request rate theo team",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "id": 5,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "sum by (namespace, resource, type) (kube_resourcequota{namespace=~\"team-dev-a|team-dev-b|team-dev-c\",resource=~\"pods|requests.cpu|requests.memory\",type=~\"used|hard\"})", "legendFormat": "{{namespace}} {{resource}} {{type}}", "refId": "A"}],
+          "title": "Quota đã dùng và giới hạn",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["caas", "tenants"],
+      "templating": {"list": []},
+      "time": {"from": "now-1h", "to": "now"},
+      "timezone": "browser",
+      "title": "CaaS - tài nguyên theo nhóm",
+      "uid": "caas-tenant-resources",
+      "version": 1
+    }

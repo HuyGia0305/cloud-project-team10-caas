@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: team-a-api
+  namespace: team-dev-a
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - team-dev-a
+  selector:
+    matchLabels:
+      app: team-a-api
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 5s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: team-b-api
+  namespace: team-dev-b
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - team-dev-b
+  selector:
+    matchLabels:
+      app: team-b-api
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 5s

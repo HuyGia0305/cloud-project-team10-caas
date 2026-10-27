@@ -15,6 +15,7 @@ spec:
           namespaces:
           - team-dev-a
           - team-dev-b
+          - team-dev-c
     validate:
       message: "Chinh sach an toan: Khong duoc phep chay container voi quyen Root (runAsNonRoot phai la true)!"
       pattern:
