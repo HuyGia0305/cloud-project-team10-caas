@@ -12,3 +12,4 @@
 - Phân vùng đa người dùng (Multi-tenancy) với 3 Namespace: \	eam-dev-a\, \	eam-dev-b\, \	eam-shared\.
 - Phân quyền truy cập theo vai trò (RBAC).
 - Kiểm soát tuân thủ và chính sách an toàn (Kyverno Admission Controller).
+- Giám sát trạng thái Kubernetes bằng Prometheus và Grafana triển khai qua Helm; xem hướng dẫn tại [DEVELOPER_ONBOARDING.md](DEVELOPER_ONBOARDING.md).

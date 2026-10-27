@@ -177,7 +177,58 @@ Chạy một lệnh port-forward trong terminal riêng. Mở URL ở cột bên 
 | PostgreSQL | shared-postgres.team-shared.svc.cluster.local:5432 |
 | Redis | shared-redis.team-shared.svc.cluster.local:6379 |
 
-## 11. Khi gặp lỗi
+## 11. Prometheus và Grafana qua Helm
+
+`kube-prometheus-stack` cài Prometheus, Grafana, Prometheus Operator, kube-state-metrics và Node Exporter. Cấu hình trong `monitoring/values.yaml` giới hạn tài nguyên, lưu dữ liệu bằng StorageClass `local-path`, giữ dữ liệu Prometheus 7 ngày và dùng Secret riêng cho mật khẩu Grafana. Cài stack sau khi cụm và StorageClass đã sẵn sàng.
+
+Cài Helm nếu máy chưa có, sau đó kiểm tra công cụ và context:
+
+    helm version
+    kubectl config current-context
+    kubectl get nodes
+    kubectl get storageclass
+
+Tạo namespace và Secret mật khẩu Grafana bằng PowerShell. Nhập mật khẩu thay vì lưu trong repo:
+
+    kubectl create namespace monitoring
+    $grafanaPassword = Read-Host "Nhap mat khau Grafana"
+    kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal="admin-password=$grafanaPassword"
+    Remove-Variable grafanaPassword
+
+Nếu namespace đã tồn tại, bỏ qua lệnh tạo namespace. Nếu Secret `grafana-admin` đã tồn tại, không cần tạo lại. Không đưa mật khẩu vào Git.
+
+Cài hoặc cập nhật stack bằng Helm:
+
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo update
+    helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --version 92.14.0 --namespace monitoring --values monitoring/values.yaml --wait --timeout 10m
+
+Kiểm tra các Pod và PVC đã sẵn sàng:
+
+    kubectl -n monitoring get pods
+    kubectl -n monitoring get pvc
+    kubectl -n monitoring rollout status deployment/monitoring-grafana --timeout=180s
+    kubectl -n monitoring get prometheus
+
+Mở Grafana trong terminal riêng. Nếu cần xem lại mật khẩu đã lưu trong Secret, dùng lệnh PowerShell sau; đăng nhập bằng tên `admin`:
+
+    kubectl -n monitoring get secret grafana-admin -o jsonpath="{.data.admin-password}" | ForEach-Object { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_)) }
+
+Sau đó chạy port-forward:
+
+    kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
+
+Truy cập http://localhost:3000. Prometheus đã được cấu hình làm data source; các dashboard Kubernetes có sẵn hiển thị thông tin node, Pod, namespace và tài nguyên. Để truy cập giao diện Prometheus khi cần:
+
+    kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
+
+Truy cập http://localhost:9090. Dừng port-forward bằng Ctrl+C. Các API Team A/Team B hiện chưa cung cấp endpoint `/metrics`; vì vậy stack này giám sát Kubernetes và tài nguyên workload, chưa thu thập metrics nghiệp vụ riêng của API.
+
+Gỡ stack nếu không còn sử dụng (dữ liệu PVC không tự bị xóa):
+
+    helm uninstall monitoring --namespace monitoring
+
+## 12. Khi gặp lỗi
 
 - ErrImageNeverPull ở API: kiểm tra image bằng docker image ls, import lại bằng k3d image import, rồi chạy kubectl rollout restart cho Deployment.
 - Pod không được tạo vì quota: xem Used/Hard bằng kubectl describe resourcequota.
