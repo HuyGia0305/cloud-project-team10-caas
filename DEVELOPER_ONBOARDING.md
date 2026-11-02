@@ -1,4 +1,4 @@
-# Hướng dẫn triển khai CaaS cho Developer
+﻿# Hướng dẫn triển khai CaaS cho Developer
 
 Các lệnh được chạy tại thư mục gốc của repo. Bước tạo Secret dùng PowerShell; các bước còn lại dùng CMD hoặc PowerShell.
 
@@ -16,17 +16,17 @@ Xem cụm hiện có:
 
     k3d cluster list
 
-Nếu caas-phat-lab đã có nhưng đang dừng, chạy:
+Nếu caas-team10 đã có nhưng đang dừng, chạy:
 
-    k3d cluster start caas-phat-lab
+    k3d cluster start caas-team10
 
 Nếu chưa có cụm, tạo 1 server và 2 agent:
 
-    k3d cluster create caas-phat-lab --servers 1 --agents 2
+    k3d cluster create caas-team10 --servers 1 --agents 2
 
 Chọn context của cụm và kiểm tra:
 
-    kubectl config use-context k3d-caas-phat-lab
+    kubectl config use-context k3d-caas-team10
     kubectl get nodes
     kubectl get storageclass
 
@@ -153,8 +153,8 @@ Hai API viết bằng Python, có endpoint `/metrics` cho Prometheus và lấy m
 
     docker build -t ghcr.io/team10/caas-team-a-api:v1 apps/team-a
     docker build -t ghcr.io/team10/caas-team-b-api:v1 apps/team-b
-    k3d image import ghcr.io/team10/caas-team-a-api:v1 --cluster caas-phat-lab
-    k3d image import ghcr.io/team10/caas-team-b-api:v1 --cluster caas-phat-lab
+    k3d image import ghcr.io/team10/caas-team-a-api:v1 --cluster caas-team10
+    k3d image import ghcr.io/team10/caas-team-b-api:v1 --cluster caas-team10
     kubectl apply -f manifests/apps/team-a.yaml
     kubectl apply -f manifests/apps/team-b.yaml
     kubectl -n team-dev-a rollout status deployment/team-a-api --timeout=180s
