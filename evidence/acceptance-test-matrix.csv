@@ -1,0 +1,29 @@
+﻿test_id,category,description,expected,actual,status
+TC-01,Namespace,Verify tenant namespace team-dev-a exists,Active,Active,PASS
+TC-02,Namespace,Verify tenant namespace team-dev-b exists,Active,Active,PASS
+TC-03,Namespace,Verify tenant namespace team-dev-c exists,Active,Active,PASS
+TC-04,Quota,Verify ResourceQuota team-quota in team-dev-a,Enforced,Enforced,PASS
+TC-05,Quota,Verify ResourceQuota team-quota in team-dev-b,Enforced,Enforced,PASS
+TC-06,Quota,Verify ResourceQuota team-quota in team-dev-c,Enforced,Enforced,PASS
+TC-07,RBAC,Team A dev-user-a create Deployments,Allowed,yes,PASS
+TC-08,RBAC,Team A dev-user-a create raw Pods,Denied,no,PASS
+TC-09,RBAC,Team B dev-user-b delete Services,Denied,no,PASS
+TC-10,RBAC,Team C dev-user-c update Deployments,Allowed,yes,PASS
+TC-11,RBAC,Team C dev-user-c delete Deployments,Denied,no,PASS
+TC-12,RBAC,Team A read Secrets in team-dev-b,Denied,no,PASS
+TC-13,Workload,Team A API and PostgreSQL/Redis healthy,postgres: 1,postgres: 1,PASS
+TC-14,Workload,Team B API and PostgreSQL/Redis healthy,postgres: 1,postgres: 1,PASS
+TC-15,DataIsolation,Team A cross-access Team B database,Denied,permission denied,PASS
+TC-16,DataIsolation,Team B cross-access Team A database,Denied,permission denied,PASS
+TC-17,DataIsolation,Team A cross-read Team B Redis key,Denied,NOPERM,PASS
+TC-18,DataIsolation,Team B cross-read Team A Redis key,Denied,NOPERM,PASS
+TC-19,NetworkPolicy,Team A internal ingress to nginx-a,HTTP 200,HTTP 200,PASS
+TC-20,NetworkPolicy,Team A cross-connect Team B API,Blocked,ConnectionRefused,PASS
+TC-21,NetworkPolicy,Team B cross-connect Team A API,Blocked,ConnectionRefused,PASS
+TC-22,Admission,Kyverno reject image tag :latest,Denied,AdmissionWebhookDenied,PASS
+TC-23,Admission,Kyverno reject unapproved image registry,Denied,AdmissionWebhookDenied,PASS
+TC-24,Admission,Pod Security Standards reject root container,Denied,AdmissionWebhookDenied,PASS
+TC-25,Quota,Reject CPU request overflow (1.2 cores > 1 core),Denied,exceeded quota,PASS
+TC-26,LimitRange,Reject container limit overflow (600m > 500m),Denied,exceeded limitrange,PASS
+TC-27,LimitRange,Apply default resources (100m/128Mi, 250m/256Mi),Applied,Applied,PASS
+TC-28,FinOps,Bounded CPU pressure experiment under quota,Controlled,Isolated,PASS
