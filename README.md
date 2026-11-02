@@ -30,7 +30,7 @@ Xem [hướng dẫn triển khai](DEVELOPER_ONBOARDING.md), [báo cáo và kết
 | kube-prometheus-stack (Helm chart) | 92.14.0 |
 | Docker | Docker version 29.8.2, build 7fc2dff |
 | k3d | k3d version v5.9.0 |
-| kubectl |  |
+| kubectl | Client Version: v1.36.1 |
 | Helm | v4.3.1+gc0d08d0 |
 
 ### Dọn dẹp tài nguyên và chi phí
