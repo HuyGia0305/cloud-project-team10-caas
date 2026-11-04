@@ -1,4 +1,4 @@
-﻿test_id,category,description,expected,actual,status
+test_id,category,description,expected,actual,status
 TC-01,Namespace,Verify tenant namespace team-dev-a exists,Active,Active,PASS
 TC-02,Namespace,Verify tenant namespace team-dev-b exists,Active,Active,PASS
 TC-03,Namespace,Verify tenant namespace team-dev-c exists,Active,Active,PASS
@@ -26,4 +26,4 @@ TC-24,Admission,Pod Security Standards reject root container,Denied,AdmissionWeb
 TC-25,Quota,Reject CPU request overflow (1.2 cores > 1 core),Denied,exceeded quota,PASS
 TC-26,LimitRange,Reject container limit overflow (600m > 500m),Denied,exceeded limitrange,PASS
 TC-27,LimitRange,Apply default resources (100m/128Mi, 250m/256Mi),Applied,Applied,PASS
-TC-28,FinOps,Bounded CPU pressure experiment under quota,Controlled,"CPU load applied within quota; no stable latency impact (n=12)",PASS
+TC-28,FinOps,Bounded CPU pressure experiment under quota,Controlled,Latency change within noise floor (n=500 per scenario; A/A control),PASS

@@ -1,0 +1,9 @@
+﻿date: 2026-11-03T16:04:18
+kubernetes: v1.35.5+k3s1
+target: team-dev-b/team-b-api on node k3d-caas-cluster-agent-1
+load: team-dev-a/cpu-pressure (4 replicas, request 200m / limit 250m each)
+load nodes observed: k3d-caas-cluster-agent-1
+load colocated with target on every run: True
+runs: 5, samples per scenario per run: 100, warm-up requests discarded: 5
+pause between requests: 50 ms, cooldown after load: 20 s
+phase order alternates (odd runs baseline first, even runs load first)

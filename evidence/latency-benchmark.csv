@@ -1,5 +1,13 @@
-﻿"run_id","scenario","target_team","samples","avg_latency_ms","max_latency_ms"
-"1","baseline_before_load","Team B API","12","34.41","80.58"
-"1","during_cpu_pressure","Team B API","12","42.36","97.59"
-"2","baseline_before_load","Team B API","12","42.86","101.53"
-"2","during_cpu_pressure","Team B API","12","36.19","78.04"
+run_id,scenario,target_team,samples,avg_latency_ms,median_latency_ms,p95_latency_ms,max_latency_ms,errors
+1,baseline,Team B API,100,17.56,16.62,22.58,43.13,0
+1,cpu_load,Team B API,100,18.62,17.80,22.93,50.91,0
+2,baseline,Team B API,100,20.97,19.81,29.41,51.45,0
+2,cpu_load,Team B API,100,21.18,19.87,29.13,42.91,0
+3,baseline,Team B API,100,19.54,18.25,27.34,43.69,0
+3,cpu_load,Team B API,100,20.05,18.95,28.44,36.26,0
+4,baseline,Team B API,100,24.30,23.55,29.60,65.38,0
+4,cpu_load,Team B API,100,24.60,22.21,35.32,77.89,0
+5,baseline,Team B API,100,25.59,23.52,34.67,86.77,0
+5,cpu_load,Team B API,100,21.64,20.23,27.95,77.38,0
+ALL,baseline,Team B API,500,21.59,20.69,29.68,86.77,0
+ALL,cpu_load,Team B API,500,21.22,19.87,30.54,77.89,0

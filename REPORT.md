@@ -10,7 +10,7 @@
 
 Trong phạm vi phòng lab, câu trả lời là kết hợp namespace theo nhóm, ResourceQuota/LimitRange, RBAC tối thiểu, NetworkPolicy mặc định từ chối, kiểm soát Pod Security/admission, quản lý Secret riêng theo namespace và giám sát tập trung. Không một lớp nào tự tạo ranh giới bảo mật cứng: quota không dành riêng CPU vật lý, network policy cần CNI hỗ trợ, và các namespace vẫn dùng chung kernel/node/control plane.
 
-Các kiểm soát trên đã được cài lên cụm và kiểm tra bằng workload mẫu. Thử nghiệm tải nhỏ xác nhận quota có thể chặn mức request vượt ngưỡng, nhưng cũng cho thấy độ trễ workload lân cận tăng trong lúc cùng dùng node. Kết quả phù hợp với mục tiêu minh họa, không phải chứng nhận production hay benchmark thống kê.
+Các kiểm soát trên đã được cài lên cụm và kiểm tra bằng workload mẫu. Thử nghiệm tải nhỏ xác nhận quota có thể chặn mức request vượt ngưỡng, và phép đo độ trễ (5 lượt x 100 mẫu, có thí nghiệm đối chứng) không cho thấy suy giảm vượt mức nhiễu đo. Kết quả phù hợp với mục tiêu minh họa, không phải chứng nhận production hay benchmark thống kê.
 
 ## 2. Kiến trúc và workload
 
@@ -116,16 +116,32 @@ Lần chạy lại `scripts/validate-platform.ps1` sau khi bật credential riê
 
 ### Đo latency trong bài thử tải
 
-Trong mỗi lượt, Team B gọi API cục bộ 12 lần trước và 12 lần trong khi bốn CPU worker của Team A chạy; thời gian là latency end-to-end của API (bao gồm PostgreSQL/Redis), không phải benchmark chuyên dụng.
+**Phương pháp.** Latency của Team B API được đo ngay bên trong pod `team-b-api` (gọi `127.0.0.1:8080`), nên không tính overhead của `kubectl`/port-forward. Bốn pod `cpu-pressure` của Team A (request 200m, limit 250m mỗi pod) được ghim cùng node với `team-b-api` bằng `nodeSelector`, vì nếu khác node thì không có cạnh tranh CPU để quan sát. Thí nghiệm gồm 5 lượt; mỗi lượt đo 100 mẫu cho mỗi kịch bản (sau 5 request khởi động bị loại), nghỉ 20 giây sau khi gỡ tải, và thứ tự baseline/có tải đan xen giữa các lượt để giảm sai lệch do thứ tự. Latency là end-to-end của API (bao gồm PostgreSQL/Redis). Dữ liệu thô nằm ở `evidence/latency-samples.csv`, điều kiện chạy ở `evidence/latency-run-info.txt`, script ở `scripts/measure-latency.ps1` và `scripts/plot-latency.py`.
 
-| Lượt đo | Trạng thái | Mẫu | Trung bình | Cao nhất |
-|---|---|---:|---:|---:|
-| 1 | Trước tải | 12 | 34.41 ms | 80.58 ms |
-| 1 | Đang tải | 12 | 42.36 ms | 97.59 ms |
-| 2 | Trước tải | 12 | 42.86 ms | 101.53 ms |
-| 2 | Đang tải | 12 | 36.19 ms | 78.04 ms |
+**Thí nghiệm đối chứng.** Để biết mức nhiễu đo tự nhiên, nhóm chạy thêm một thí nghiệm A/A với cùng quy trình nhưng không bật tải (`evidence/latency-samples-control.csv`). Mọi chênh lệch giữa hai kịch bản chỉ có ý nghĩa nếu vượt được mức dao động này.
 
-Kết quả hai lượt không nhất quán: lượt 1 cao hơn khoảng 23% trong tải, lượt 2 thấp hơn khoảng 16%. Cỡ mẫu nhỏ, có nhiễu từ scheduler/DB/cache và thời gian đo ngắn nên chưa thể kết luận có mức suy giảm latency ổn định; cần nhiều lượt, thời lượng dài và P95/P99 để đánh giá. Thí nghiệm vẫn xác nhận có thể đặt tải CPU trong quota Team A và quan sát tài nguyên/ảnh hưởng qua monitoring, nhưng quota không bảo đảm loại bỏ noisy neighbor. Node, memory bandwidth, disk I/O, network và control plane vẫn dùng chung.
+| Lượt | TB không tải | TB có tải | Tỉ lệ có tải/không tải | Tỉ lệ ở đối chứng (không tải) |
+|---|---:|---:|---:|---:|
+| 1 | 17.56 ms | 18.62 ms | 1.06 | 1.24 |
+| 2 | 20.97 ms | 21.18 ms | 1.01 | 1.10 |
+| 3 | 19.54 ms | 20.05 ms | 1.03 | 0.94 |
+| 4 | 24.30 ms | 24.60 ms | 1.01 | 1.04 |
+| 5 | 25.59 ms | 21.64 ms | 0.85 | 0.95 |
+
+Số liệu gộp (500 mẫu mỗi kịch bản, 0 lỗi):
+
+| Thí nghiệm | Kịch bản | Trung bình | Trung vị | P95 | Cao nhất |
+|---|---|---:|---:|---:|---:|
+| Chính | Không tải | 21.59 ms | 20.69 ms | 29.68 ms | 86.77 ms |
+| Chính | Có tải CPU | 21.22 ms | 19.87 ms | 30.54 ms | 77.89 ms |
+| Đối chứng | Lượt "không tải" thứ nhất | 18.49 ms | 17.07 ms | 26.38 ms | 55.50 ms |
+| Đối chứng | Lượt "không tải" thứ hai | 19.41 ms | 17.77 ms | 27.34 ms | 75.19 ms |
+
+![Phân bố latency theo lượt](docs/latency-boxplot.png)
+
+**Diễn giải.** Có tải, trung bình chậm hơn 1–6% ở 4/5 lượt nhưng nhanh hơn khoảng 15% ở lượt 5; trung bình gộp không cao hơn (21.22 so với 21.59 ms) và P95 cao hơn khoảng 3% (30.54 so với 29.68 ms). Thí nghiệm đối chứng, vốn không có tải, cho tỉ lệ giữa hai lượt dao động từ 0.94 đến 1.24, lớn hơn các chênh lệch 1–6% ở trên. Vì vậy, với tải này (4 pod x 250m trên cùng node, trong quota Team A), nhóm không phát hiện suy giảm latency ổn định của Team B vượt mức nhiễu đo. Đây là kết quả phù hợp với thiết kế (CPU limit chặn tải ở mức 1 core tổng), nhưng không chứng minh noisy neighbor không xảy ra.
+
+**Hạn chế.** Cụm k3d chạy trên Docker Desktop, các node cùng chia sẻ một máy chủ nên bản thân nền đo đã nhiễu; chỉ có 5 lượt và chỉ đo trung bình/trung vị/P95 (chưa đủ mẫu cho P99); tải chỉ là CPU, chưa thử memory bandwidth, disk I/O hay network; API nhẹ nên ít nhạy với cạnh tranh CPU. Quota và limit không bảo đảm cô lập hoàn toàn: node, memory bandwidth, disk I/O, network và control plane vẫn dùng chung. Mẫu thử 12 điểm trước đó được giữ lại ở `evidence/latency-benchmark-pilot.csv` như lần thử sơ bộ.
 
 ## 6. Giám sát
 

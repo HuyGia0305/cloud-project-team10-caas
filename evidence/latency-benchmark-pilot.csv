@@ -1,0 +1,5 @@
+﻿"run_id","scenario","target_team","samples","avg_latency_ms","max_latency_ms"
+"1","baseline_before_load","Team B API","12","34.41","80.58"
+"1","during_cpu_pressure","Team B API","12","42.36","97.59"
+"2","baseline_before_load","Team B API","12","42.86","101.53"
+"2","during_cpu_pressure","Team B API","12","36.19","78.04"

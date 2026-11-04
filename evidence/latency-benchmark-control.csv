@@ -1,0 +1,13 @@
+run_id,scenario,target_team,samples,avg_latency_ms,median_latency_ms,p95_latency_ms,max_latency_ms,errors
+1,baseline,Team B API,100,18.02,16.73,25.77,36.91,0
+1,cpu_load,Team B API,100,22.43,20.74,35.62,50.83,0
+2,baseline,Team B API,100,17.64,16.63,22.18,42.16,0
+2,cpu_load,Team B API,100,19.34,18.02,26.68,42.49,0
+3,baseline,Team B API,100,20.50,18.19,30.35,55.50,0
+3,cpu_load,Team B API,100,19.23,17.51,25.57,68.08,0
+4,baseline,Team B API,100,17.58,16.71,21.34,47.15,0
+4,cpu_load,Team B API,100,18.36,17.46,22.47,58.36,0
+5,baseline,Team B API,100,18.70,17.45,26.36,34.05,0
+5,cpu_load,Team B API,100,17.68,16.68,19.43,75.19,0
+ALL,baseline,Team B API,500,18.49,17.07,26.38,55.50,0
+ALL,cpu_load,Team B API,500,19.41,17.77,27.34,75.19,0
