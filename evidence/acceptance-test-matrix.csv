@@ -27,3 +27,6 @@ TC-25,Quota,Reject CPU request overflow (1.2 cores > 1 core),Denied,exceeded quo
 TC-26,LimitRange,Reject container limit overflow (600m > 500m),Denied,exceeded limitrange,PASS
 TC-27,LimitRange,Apply default resources (100m/128Mi, 250m/256Mi),Applied,Applied,PASS
 TC-28,FinOps,Bounded CPU pressure experiment under quota,Controlled,Latency change within noise floor (n=500 per scenario; A/A control),PASS
+TC-29,NetworkPolicy,Team A egress to shared PostgreSQL 5432,Allowed,connect_ex=0,PASS
+TC-30,NetworkPolicy,Team A egress to shared Redis 6379,Allowed,connect_ex=0,PASS
+TC-31,NetworkPolicy,Team A cross-connect Team C nginx 8080,Blocked,ConnectionRefused,PASS

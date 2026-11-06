@@ -98,6 +98,8 @@ Kiểm thử trên cụm `caas-phat-lab`, ngày 27-10-2026. `PASS` nghĩa là c�
 | API A/B truy vấn PostgreSQL/Redis | API trả `postgres: 1`, bộ đếm Redis tăng | Shared egress được phép đúng cổng | PASS |
 | Cùng namespace A tới nginx A; B tới HTTPBin B | HTTP 200 | Lưu lượng cần thiết trong nhóm được phép | PASS |
 | A tới API B và B tới API A | TCP connection bị từ chối (`ConnectionRefusedError`) | Chặn truy cập chéo | PASS |
+| A tới PostgreSQL 5432 và Redis 6379 dùng chung (TC-29, TC-30) | Kết nối được (`connect_ex = 0`) | Luồng được phép hoạt động | PASS |
+| A tới nginx Team C cổng 8080, Pod đang lắng nghe (TC-31) | Kết nối bị từ chối (`111`) | Chặn truy cập chéo sang Team C | PASS |
 | Role A tạo Deployment / tạo Pod trực tiếp | Quyền Deployment được cấp; quyền tạo Pod bị từ chối sau áp dụng RBAC tối thiểu | Ít quyền nhất, buộc triển khai qua controller | PASS |
 | Role B xóa Service; Role C xóa Deployment | Cả hai quyền đều bị từ chối; C được tạo/cập nhật Deployment | Quyền khác nhau | PASS |
 | Role A đọc Secret ở namespace B | `kubectl auth can-i` trả `no` | Không đọc Secret chéo namespace | PASS |
