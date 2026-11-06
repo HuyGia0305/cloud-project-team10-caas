@@ -119,7 +119,9 @@ Chạy phần này bằng PowerShell trên cụm mới. Tạo một mật khẩu
       kubectl -n team-shared create secret generic shared-postgres-auth `
         --from-literal="POSTGRES_PASSWORD=$adminPassword" `
         --from-literal="TEAM_A_PASSWORD=$teamAPassword" `
-        --from-literal="TEAM_B_PASSWORD=$teamBPassword"
+        --from-literal="TEAM_B_PASSWORD=$teamBPassword" `
+        --from-literal="TEAM_A_REDIS_PASSWORD=$teamAPassword" `
+        --from-literal="TEAM_B_REDIS_PASSWORD=$teamBPassword"
       kubectl -n team-dev-a create secret generic team-a-db-auth `
         --from-literal="POSTGRES_PASSWORD=$teamAPassword" `
         --from-literal="REDIS_PASSWORD=$teamAPassword"
