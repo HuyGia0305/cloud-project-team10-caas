@@ -1,0 +1,67 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20261106220513
+Username: VANTHAI\Admin
+RunAs User: VANTHAI\Admin
+Configuration Name: 
+Machine: VANTHAI (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command try { . "d:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\a717861c07\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1" } catch {}
+Process ID: 27736
+PSVersion: 5.1.26100.9711
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9711
+BuildVersion: 10.0.26100.9711
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+CaaS platform acceptance tests
+[PASS] Namespace team-dev-a exists - namespace lookup
+[PASS] Quota team-dev-a exists - ResourceQuota team-quota
+[PASS] Namespace team-dev-b exists - namespace lookup
+[PASS] Quota team-dev-b exists - ResourceQuota team-quota
+[PASS] Namespace team-dev-c exists - namespace lookup
+[PASS] Quota team-dev-c exists - ResourceQuota team-quota
+[PASS] Team A can manage Deployments - can-i returned yes; expected True
+[PASS] Team A cannot create raw Pods - can-i returned no; expected False
+[PASS] Team B cannot delete Services - can-i returned no; expected False
+[PASS] Team C can update Deployments - can-i returned yes; expected True
+[PASS] Team C cannot delete Deployments - can-i returned no; expected False
+[PASS] Team A cannot read Team B Secrets - can-i returned no; expected False
+[PASS] Team A API and shared services - API reports healthy PostgreSQL and Redis access
+[PASS] Team B API and shared services - API reports healthy PostgreSQL and Redis access
+[PASS] Team A cannot connect to Team B database - cross-team database connection result: DENIED
+[PASS] Team B cannot connect to Team A database - cross-team database connection result: DENIED
+[PASS] Team A cannot read Team B Redis key - cross-team Redis key access was denied
+[PASS] Team B cannot read Team A Redis key - cross-team Redis key access was denied
+[PASS] Team A same-namespace ingress allowed - HTTP result: 200; expected 200
+[PASS] Team B same-namespace ingress allowed - HTTP result: 200; expected 200
+[PASS] Team A to Team B blocked - DNS resolved; destination has 1 ready endpoint(s); expected a refused or timed-out connection; result: 111
+[PASS] Team B to Team A blocked - DNS resolved; destination has 1 ready endpoint(s); expected a refused or timed-out connection; result: 111
+[PASS] latest image rejected - expected rejection observed
+[PASS] unapproved registry rejected - expected rejection observed
+[PASS] root container rejected - expected rejection observed
+[PASS] CPU quota overflow rejected - expected rejection observed
+[PASS] Memory quota overflow rejected - expected rejection observed
+[PASS] LimitRange overflow rejected - expected rejection observed
+[PASS] ConfigMap object quota enforced - ConfigMap beyond count quota was rejected
+[PASS] LimitRange supplies default resources - 100m/128Mi, 250m/256Mi
+CPU-load criterion: 30 samples per phase, zero errors, loaded P95 <= baseline P95 * 1.25.
+Team B latency before neighbor CPU load:
+count=30 errors=0 p95_ms=78.98
+
+
+Ready CPU workers: 4/4; workers on Team B node (k3d-caas-phat-lab-agent-1): 4/4
+CPU usage while load is active:
+cpu-pressure-56f748777c-6sfxw   251m   3Mi
+cpu-pressure-56f748777c-8c5jt   250m   3Mi
+cpu-pressure-56f748777c-gwdgz   251m   3Mi
+cpu-pressure-56f748777c-h6szp   252m   3Mi
+Team B latency during neighbor CPU load:
+[PASS] Bounded CPU pressure experiment - baseline P95=78.98 ms; loaded P95=95.45 ms; change=20.9%; errors baseline/loaded=0/0; threshold <=25%, zero errors
+Acceptance results: 31 passed; 0 failed.
+**********************
+Windows PowerShell transcript end
+End time: 20261106220618
+**********************

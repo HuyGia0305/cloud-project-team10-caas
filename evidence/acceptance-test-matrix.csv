@@ -18,15 +18,15 @@ TC-16,DataIsolation,Team B cross-access Team A database,Denied,permission denied
 TC-17,DataIsolation,Team A cross-read Team B Redis key,Denied,NOPERM,PASS
 TC-18,DataIsolation,Team B cross-read Team A Redis key,Denied,NOPERM,PASS
 TC-19,NetworkPolicy,Team A internal ingress to nginx-a,HTTP 200,HTTP 200,PASS
-TC-20,NetworkPolicy,Team A cross-connect Team B API,Blocked,ConnectionRefused,PASS
-TC-21,NetworkPolicy,Team B cross-connect Team A API,Blocked,ConnectionRefused,PASS
-TC-22,Admission,Kyverno reject image tag :latest,Denied,AdmissionWebhookDenied,PASS
-TC-23,Admission,Kyverno reject unapproved image registry,Denied,AdmissionWebhookDenied,PASS
-TC-24,Admission,Pod Security Standards reject root container,Denied,AdmissionWebhookDenied,PASS
-TC-25,Quota,Reject CPU request overflow (1.2 cores > 1 core),Denied,exceeded quota,PASS
-TC-26,LimitRange,Reject container limit overflow (600m > 500m),Denied,exceeded limitrange,PASS
-TC-27,LimitRange,Apply default resources (100m/128Mi, 250m/256Mi),Applied,Applied,PASS
-TC-28,FinOps,Bounded CPU pressure experiment under quota,Controlled,Latency change within noise floor (n=500 per scenario; A/A control),PASS
-TC-29,NetworkPolicy,Team A egress to shared PostgreSQL 5432,Allowed,connect_ex=0,PASS
-TC-30,NetworkPolicy,Team A egress to shared Redis 6379,Allowed,connect_ex=0,PASS
-TC-31,NetworkPolicy,Team A cross-connect Team C nginx 8080,Blocked,ConnectionRefused,PASS
+TC-20,NetworkPolicy,Team A cross-connect Team B API,Blocked,DNS resolved + ready endpoint + errno 111,PASS
+TC-21,NetworkPolicy,Team B cross-connect Team A API,Blocked,DNS resolved + ready endpoint + errno 111,PASS
+TC-22,NetworkPolicy,Team B same-namespace ingress to HTTPBin,HTTP 200,HTTP 200,PASS
+TC-23,Admission,Kyverno reject image tag :latest,Denied,AdmissionWebhookDenied,PASS
+TC-24,Admission,Kyverno reject unapproved image registry,Denied,AdmissionWebhookDenied,PASS
+TC-25,Admission,Pod Security Standards reject root container,Denied,AdmissionWebhookDenied,PASS
+TC-26,Quota,Reject CPU request overflow (1.2 cores > 1 core),Denied,exceeded quota,PASS
+TC-27,Quota,Reject memory request overflow (1.2Gi > 1Gi),Denied,exceeded quota,PASS
+TC-28,Quota,Reject ConfigMap count beyond namespace quota,Denied,exceeded quota,PASS
+TC-29,LimitRange,Reject container limit overflow (600m > 500m),Denied,exceeded limitrange,PASS
+TC-30,LimitRange,"Apply default resources (100m/128Mi, 250m/256Mi)",Applied,Applied,PASS
+TC-31,FinOps,Bounded CPU pressure experiment under quota,30 samples per phase; loaded P95 <= baseline P95 * 1.25; zero errors,baseline P95 78.98ms; loaded 95.45ms (+20.9%); 4/4 workers colocated; zero errors,PASS

@@ -41,7 +41,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
           "id": 3,
           "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-          "targets": [{"expr": "sum by (namespace) (kube_pod_info{namespace=~\"team-dev-a|team-dev-b|team-dev-c\"})", "legendFormat": "{{namespace}}", "refId": "A"}],
+          "targets": [{"expr": "sum by (namespace) (kube_pod_status_phase{namespace=~\"team-dev-a|team-dev-b|team-dev-c\",phase=\"Running\"} == 1)", "legendFormat": "{{namespace}}", "refId": "A"}],
           "title": "Số Pod đang chạy theo namespace",
           "type": "timeseries"
         },
