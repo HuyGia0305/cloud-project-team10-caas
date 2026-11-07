@@ -196,8 +196,8 @@ Gọi Nginx và HTTPBin qua Service; cả hai trả mã 200:
 API Team A/B phải cung cấp Prometheus metrics:
 
     kubectl -n team-dev-a exec deployment/team-a-api -- python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/metrics', timeout=5).read().decode()[:300])"
-    kubectl apply -f manifests/apps/team-api-servicemonitors.yaml
-    kubectl apply -f monitoring/tenant-dashboard.yaml
+
+Sau khi cài kube-prometheus-stack theo Mục 12, áp dụng ServiceMonitor và dashboard để Prometheus scrape API.
 
 Tạo client thử nghiệm đã khai báo tài nguyên và security context:
 
@@ -240,9 +240,35 @@ Ma trận kiểm thử lặp lại và bài đo tải tùy chọn:
     .\scripts\validate-platform.ps1
     .\scripts\validate-platform.ps1 -IncludeCpuLoad
 
+Lưu output đầy đủ, bao gồm cả `Write-Host` và tổng kết PASS/FAIL, vào PowerShell transcript (đổi ngày trong tên file cho mỗi lần chạy):
+
+    Start-Transcript -Path evidence\acceptance-test-run-YYYY-MM-DD.log
+    .\scripts\validate-platform.ps1 -IncludeCpuLoad
+    Stop-Transcript
+
 Bài tải chạy tối đa bốn Pod CPU loop trong Team A (200m request/250m limit mỗi Pod) và tự xóa Deployment sau khi đo; không bỏ giới hạn tài nguyên.
 
-## 9. Xem ứng dụng trên máy cá nhân
+## 9. Demo tương tác
+
+Chạy sau khi đã triển khai workload, policy và monitoring ở các bước trên. Giao diện web là demo rút gọn để trình bày; kết quả acceptance đầy đủ vẫn do `scripts/validate-platform.ps1` quyết định.
+
+Trong terminal PowerShell tại thư mục gốc repo:
+
+    python scripts/demo_ui.py
+
+Trình duyệt tự mở tại `http://localhost:8765`. Bấm từng nhóm kiểm tra hoặc **Chạy tất cả**. Nút mở Grafana/API tạo `kubectl port-forward`; các process này được dừng khi tắt demo bằng Ctrl+C. Trang demo không đọc hay hiển thị mật khẩu Grafana; lấy mật khẩu theo Mục 12.
+
+Demo dòng lệnh trong PowerShell:
+
+    .\scripts\demo.ps1
+    .\scripts\demo.ps1 -Auto
+    .\scripts\demo.ps1 -Full
+
+`-Full` chạy acceptance suite đủ 31 ca, bao gồm CPU load, và ghi log mới trong `evidence/`. Nếu PowerShell chặn script, chỉ đổi ExecutionPolicy cho process hiện tại:
+
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+## 10. Xem ứng dụng trên máy cá nhân
 
 Chạy một lệnh port-forward trong terminal riêng. Mở URL ở cột bên phải; nhấn Ctrl+C để dừng.
 
@@ -254,7 +280,7 @@ Chạy một lệnh port-forward trong terminal riêng. Mở URL ở cột bên 
 | HTTPBin Team B | kubectl -n team-dev-b port-forward svc/httpbin-b 8083:8080 | http://localhost:8083/get |
 | Web Team C | kubectl -n team-dev-c port-forward svc/team-c-web 8084:8080 | http://localhost:8084/ |
 
-## 10. Địa chỉ Service cho giám sát
+## 11. Địa chỉ Service cho giám sát
 
 | Dịch vụ | Địa chỉ trong cụm |
 |---|---|
@@ -266,7 +292,7 @@ Chạy một lệnh port-forward trong terminal riêng. Mở URL ở cột bên 
 | Redis | shared-redis.team-shared.svc.cluster.local:6379 |
 | Web Team C | team-c-web.team-dev-c.svc.cluster.local:8080 |
 
-## 11. Prometheus và Grafana qua Helm
+## 12. Prometheus và Grafana qua Helm
 
 `kube-prometheus-stack` cài Prometheus, Grafana, Prometheus Operator, kube-state-metrics và Node Exporter. Cấu hình trong `monitoring/values.yaml` giới hạn tài nguyên, lưu dữ liệu bằng StorageClass `local-path`, giữ dữ liệu Prometheus 7 ngày và dùng Secret riêng cho mật khẩu Grafana. Cài stack sau khi cụm và StorageClass đã sẵn sàng.
 
@@ -291,6 +317,9 @@ Cài hoặc cập nhật stack bằng Helm:
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     helm repo update
     helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --version 92.14.0 --namespace monitoring --values monitoring/values.yaml --wait --timeout 10m
+
+Sau khi Helm tạo namespace, CRD và các dịch vụ monitoring, đăng ký scrape API và nạp dashboard tenant:
+
     kubectl apply -f manifests/apps/team-api-servicemonitors.yaml
     kubectl apply -f monitoring/tenant-dashboard.yaml
 
@@ -319,11 +348,11 @@ Gỡ stack nếu không còn sử dụng (dữ liệu PVC không tự bị xóa)
 
     helm uninstall monitoring --namespace monitoring
 
-## 12. Báo cáo và kiểm thử
+## 13. Báo cáo và kiểm thử
 
 [REPORT.md](REPORT.md) mô tả câu hỏi nghiên cứu, mô hình CaaS, giới hạn multi-tenancy, cấu hình quyền/chính sách, ma trận thử nghiệm và kết quả đo workload lân cận. Chụp ảnh dashboard Grafana làm minh chứng khi nộp báo cáo.
 
-## 13. Khi gặp lỗi
+## 14. Khi gặp lỗi
 
 - ErrImageNeverPull ở API: kiểm tra image bằng docker image ls, import lại bằng k3d image import, rồi chạy kubectl rollout restart cho Deployment.
 - Pod không được tạo vì quota: xem Used/Hard bằng kubectl describe resourcequota.

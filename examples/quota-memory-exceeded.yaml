@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quota-memory-exceeded
+  namespace: team-dev-a
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: first
+      image: docker.io/library/busybox:1.36.1
+      command: ["sleep", "3600"]
+      resources:
+        requests: {cpu: 50m, memory: 400Mi}
+        limits: {cpu: 100m, memory: 400Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+    - name: second
+      image: docker.io/library/busybox:1.36.1
+      command: ["sleep", "3600"]
+      resources:
+        requests: {cpu: 50m, memory: 400Mi}
+        limits: {cpu: 100m, memory: 400Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+    - name: third
+      image: docker.io/library/busybox:1.36.1
+      command: ["sleep", "3600"]
+      resources:
+        requests: {cpu: 50m, memory: 400Mi}
+        limits: {cpu: 100m, memory: 400Mi}
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]

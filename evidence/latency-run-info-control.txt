@@ -1,0 +1,11 @@
+experiment: A/A unloaded control
+raw samples: evidence/latency-samples-control.csv
+summary: evidence/latency-benchmark-control.csv
+runs: 5
+samples per phase per run: 100
+load applied: no; both phases are unloaded
+scenario labels: baseline and second_no_load
+collection script: not retained as a separate artifact
+collection date, Kubernetes version, and node: not recorded with the control samples
+
+The original CSV files used the label "cpu_load" for the second unloaded phase. That label is normalized to "second_no_load" in these evidence files; sample values are unchanged. Missing environment details limit exact reproduction of the control run.

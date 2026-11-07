@@ -98,8 +98,7 @@ Kiểm thử trên cụm `caas-phat-lab`, ngày 27-10-2026. `PASS` nghĩa là c�
 | API A/B truy vấn PostgreSQL/Redis | API trả `postgres: 1`, bộ đếm Redis tăng | Shared egress được phép đúng cổng | PASS |
 | Cùng namespace A tới nginx A; B tới HTTPBin B | HTTP 200 | Lưu lượng cần thiết trong nhóm được phép | PASS |
 | A tới API B và B tới API A | TCP connection bị từ chối (`ConnectionRefusedError`) | Chặn truy cập chéo | PASS |
-| A tới PostgreSQL 5432 và Redis 6379 dùng chung (TC-29, TC-30) | Kết nối được (`connect_ex = 0`) | Luồng được phép hoạt động | PASS |
-| A tới nginx Team C cổng 8080, Pod đang lắng nghe (TC-31) | Kết nối bị từ chối (`111`) | Chặn truy cập chéo sang Team C | PASS |
+| A tới nginx Team C cổng 8080 (Pod đang lắng nghe; kiểm tra thủ công ngoài ma trận) | Kết nối bị từ chối (`111`) | Chặn truy cập chéo sang Team C | PASS |
 | Role A tạo Deployment / tạo Pod trực tiếp | Quyền Deployment được cấp; quyền tạo Pod bị từ chối sau áp dụng RBAC tối thiểu | Ít quyền nhất, buộc triển khai qua controller | PASS |
 | Role B xóa Service; Role C xóa Deployment | Cả hai quyền đều bị từ chối; C được tạo/cập nhật Deployment | Quyền khác nhau | PASS |
 | Role A đọc Secret ở namespace B | `kubectl auth can-i` trả `no` | Không đọc Secret chéo namespace | PASS |
@@ -108,19 +107,21 @@ Kiểm thử trên cụm `caas-phat-lab`, ngày 27-10-2026. `PASS` nghĩa là c�
 | Image `:latest` và image từ `quay.io` | Kyverno webhook từ chối | Chỉ nhận repo/tag được duyệt | PASS |
 | Pod root | Pod Security Admission `restricted` từ chối | Không chạy root | PASS |
 | CPU requests 1.2 cores trong quota 1 core | API từ chối; quota đang dùng 150m, giới hạn 1 CPU | Chặn vượt quota | PASS |
+| Memory requests 1.2Gi trong quota 1Gi | API từ chối do vượt quota | Chặn vượt quota RAM | PASS |
+| Tạo ConfigMap vượt ngưỡng 10 đối tượng | API từ chối do vượt quota | Chặn vượt quota số đối tượng | PASS |
 | Container limit CPU 600m trong max 500m | LimitRange từ chối | Chặn container quá giới hạn | PASS |
 | Pod không khai báo resource trong ví dụ mặc định | Admission thêm request 100m/128Mi, limit 250m/256Mi | Áp dụng default LimitRange | PASS |
 | Prometheus scrape API A/B | 2 target tenant, cả hai `up=1`; query metrics ứng dụng có series | API metrics được thu thập | PASS |
 | Grafana dashboard tenant | Sidecar nạp ConfigMap dashboard thành công (`200 OK`) | Dashboard theo namespace | PASS |
-| CPU neighbor load trong Team A | 4 Pod cùng agent-0, mỗi request 200m/limit 250m; quota hiển thị tổng request 950m/1 core, Pod 6/6 | Giới hạn được áp dụng, có thể quan sát cạnh tranh | PASS |
+| CPU neighbor load của Team A cùng node Team B | 4/4 worker Ready trên agent-1, mỗi CPU usage 250–252m; Team B P95 78.98 ms baseline, 95.45 ms tải (+20.9%), 0 lỗi | Tải thực sự đồng vị trí; P95 không tăng quá 25%, không lỗi | PASS |
 
-Lần chạy lại `scripts/validate-platform.ps1` sau khi bật credential riêng đạt **27 kiểm tra thành công, 0 lỗi**; chạy thêm tùy chọn tải CPU đạt **28/28**. Bộ này xác minh API A/B thực sự đọc PostgreSQL và Redis, quyền truy cập chéo database/key Redis bị từ chối ở cả hai chiều, ngoài kiểm tra quota, RBAC, network, admission và LimitRange.
+Lần chạy đầy đủ mới nhất ngày 06-11-2026 đạt **31/31 PASS, 0 lỗi**, gồm 30 kiểm tra cơ bản và bài tải CPU tùy chọn. Transcript đầy đủ tại `evidence/acceptance-test-run-2026-11-06-transcript.log`. Hai kiểm tra chéo mạng xác nhận DNS phân giải, EndpointSlice có địa chỉ Ready và TCP trả errno 111 (`ECONNREFUSED`). Bài tải xác nhận 4/4 worker cùng node với Team B, CPU usage 250–252m mỗi Pod; 30 mẫu mỗi pha, P95 thay đổi +20.9% và không có lỗi. Tiêu chí smoke test là P95 khi tải không vượt baseline quá 25% và không lỗi request; đây không phải kiểm định thống kê và không chứng minh mọi dạng noisy neighbor đều bị loại trừ.
 
 ### Đo latency trong bài thử tải
 
 **Phương pháp.** Latency của Team B API được đo ngay bên trong pod `team-b-api` (gọi `127.0.0.1:8080`), nên không tính overhead của `kubectl`/port-forward. Bốn pod `cpu-pressure` của Team A (request 200m, limit 250m mỗi pod) được ghim cùng node với `team-b-api` bằng `nodeSelector`, vì nếu khác node thì không có cạnh tranh CPU để quan sát. Thí nghiệm gồm 5 lượt; mỗi lượt đo 100 mẫu cho mỗi kịch bản (sau 5 request khởi động bị loại), nghỉ 20 giây sau khi gỡ tải, và thứ tự baseline/có tải đan xen giữa các lượt để giảm sai lệch do thứ tự. Latency là end-to-end của API (bao gồm PostgreSQL/Redis). Dữ liệu thô nằm ở `evidence/latency-samples.csv`, điều kiện chạy ở `evidence/latency-run-info.txt`, script ở `scripts/measure-latency.ps1` và `scripts/plot-latency.py`.
 
-**Thí nghiệm đối chứng.** Để biết mức nhiễu đo tự nhiên, nhóm chạy thêm một thí nghiệm A/A với cùng quy trình nhưng không bật tải (`evidence/latency-samples-control.csv`). Mọi chênh lệch giữa hai kịch bản chỉ có ý nghĩa nếu vượt được mức dao động này.
+**Thí nghiệm đối chứng.** Để biết mức nhiễu đo tự nhiên, nhóm chạy thêm một thí nghiệm A/A với cùng quy trình nhưng không bật tải (`evidence/latency-samples-control.csv`). Trong CSV, nhãn `baseline` và `second_no_load` đều là các pha không tải; metadata và các giới hạn lưu trữ được ghi tại `evidence/latency-run-info-control.txt`. Mọi chênh lệch giữa hai kịch bản chỉ có ý nghĩa nếu vượt được mức dao động này.
 
 | Lượt | TB không tải | TB có tải | Tỉ lệ có tải/không tải | Tỉ lệ ở đối chứng (không tải) |
 |---|---:|---:|---:|---:|

@@ -14,12 +14,12 @@
 - Cô lập luồng mạng bằng default-deny NetworkPolicy; admission policy bằng Kyverno và Pod Security Admission.
 - Prometheus/Grafana qua Helm, dashboard CPU/RAM/quota theo nhóm; API A/B phát metrics.
 
-Xem [hướng dẫn triển khai](DEVELOPER_ONBOARDING.md), [báo cáo và kết quả kiểm thử](REPORT.md), và [script kiểm chứng](scripts/validate-platform.ps1).
+Xem [hướng dẫn triển khai và demo](DEVELOPER_ONBOARDING.md), [báo cáo và kết quả kiểm thử](REPORT.md), [giao diện demo](scripts/demo_ui.py), [demo PowerShell](scripts/demo.ps1), và [acceptance suite](scripts/validate-platform.ps1).
 
 
 ### Minh chứng kiểm thử
-- evidence/acceptance-test-matrix.csv: ma trận 28 ca kiểm thử được phép / bị từ chối.
-- evidence/latency-benchmark.csv: số đo độ trễ API Team B trước và trong lúc tải CPU của Team A (2 lượt, 12 mẫu mỗi lượt; chỉ mang tính tham khảo).
+- evidence/acceptance-test-matrix.csv: ma trận 31 ca kiểm thử được phép / bị từ chối; lần chạy đầy đủ mới nhất đạt 31/31, log tại evidence/acceptance-test-run-2026-11-06-transcript.log.
+- evidence/latency-benchmark.csv: số đo độ trễ API Team B trước và trong lúc tải CPU của Team A (5 lượt, 100 mẫu mỗi kịch bản mỗi lượt), kèm đối chứng A/A và metadata tại evidence/latency-run-info-control.txt; chỉ mang tính tham khảo.
 - scripts/validate-platform.ps1: chạy lại toàn bộ kiểm tra trên cụm.
 
 ### Phiên bản công nghệ

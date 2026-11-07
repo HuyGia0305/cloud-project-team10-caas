@@ -21,13 +21,13 @@ spec:
           type: RuntimeDefault
       affinity:
         podAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app: team-a-api
-                topologyKey: kubernetes.io/hostname
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: team-b-api
+              namespaces:
+                - team-dev-b
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: cpu-worker
           image: ghcr.io/team10/caas-team-a-api:v1
